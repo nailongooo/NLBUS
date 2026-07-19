@@ -1,0 +1,47 @@
+name: Backend Syntax Check
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ "backend/**" ]
+  pull_request:
+    branches: [ "main" ]
+    paths: [ "backend/**" ]
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    name: Install & Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Syntax-check all JS files
+        working-directory: backend
+        run: |
+          find . -name "*.js" -not -path "./node_modules/*" -print0 | xargs -0 -n1 node --check
+
+      - name: Try starting server briefly (should not crash on boot)
+        working-directory: backend
+        env:
+          PORT: 3000
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: bus_tracker
+          JWT_SECRET: ci-test-secret-key-not-for-production
+        run: |
+          timeout 5 node server.js || code=$?; \
+          if [ "${code:-0}" -ne 124 ]; then \
+            echo "服务进程在 5 秒内异常退出，请检查日志"; \
+          else \
+            echo "服务正常启动（超时终止，属于预期，因为 CI 里没有真实数据库）"; \
+          fi

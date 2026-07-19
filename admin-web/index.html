@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>出行提醒 · 管理后台登录</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="center-page">
+    <div class="login-card">
+      <h1>出行提醒 · 管理后台</h1>
+      <form id="loginForm">
+        <input type="text" id="username" placeholder="管理员用户名" autocomplete="username" required />
+        <input type="password" id="password" placeholder="密码" autocomplete="current-password" required />
+        <div class="error-text" id="errorText"></div>
+        <button type="submit">登录</button>
+      </form>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

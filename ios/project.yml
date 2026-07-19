@@ -1,0 +1,116 @@
+name: BusTracker
+options:
+  bundleIdPrefix: com.bus.nailong
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    ENABLE_PREVIEWS: YES
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+
+targets:
+  BusTracker:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes:
+          - "**/Info.plist"
+      - path: Shared
+    resources:
+      - path: App/Resources
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: 出行提醒
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSLocationWhenInUseUsageDescription: "需要在你使用行程提醒功能时获取位置，用于判断你距离目标站点的距离。"
+        NSLocationAlwaysAndWhenInUseUsageDescription: "开启行程提醒后，App 需要在锁屏或切换到其它 App 时继续获取位置，才能在你到站前及时提醒你，行程结束后会自动停止。"
+        NSLocationTemporaryUsageDescriptionDictionary:
+          RouteRecording: "用于记录你新建路线时的实际行走/行驶轨迹。"
+        UIBackgroundModes:
+          - location
+        ITSAppUsesNonExemptEncryption: false
+        NSUserNotificationsUsageDescription: "用于在你即将到站、上车提醒、坐过站等情况下推送通知。"
+        CFBundleLocalizations:
+          - zh-Hans
+          - en
+        CFBundleDevelopmentRegion: zh-Hans
+        NSSupportsLiveActivities: true
+    entitlements:
+      path: App/BusTracker.entitlements
+      properties: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bus.nailong
+        PRODUCT_NAME: BusTracker
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO
+    dependencies:
+      - target: BusTrackerWidgetExtension
+        embed: true
+
+  BusTrackerWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+      - path: Shared
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: 行程活动
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/BusTrackerWidget.entitlements
+      properties: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bus.nailong.widget
+        PRODUCT_NAME: BusTrackerWidgetExtension
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: NO
+
+  BusTrackerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bus.nailong.tests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: BusTracker
+
+schemes:
+  BusTracker:
+    build:
+      targets:
+        BusTracker: all
+        BusTrackerTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - BusTrackerTests
+    archive:
+      config: Release

@@ -1,0 +1,33 @@
+# Nginx 反向代理示例配置。
+# 假设你的域名是 bus-api.yourdomain.com，证书路径请替换成你自己申请的实际路径。
+# 用法：把这个文件内容放进 /etc/nginx/conf.d/bustracker.conf（或者 sites-available 对应位置），
+# 然后 nginx -t 测试配置无误后 systemctl reload nginx。
+
+server {
+    listen 80;
+    server_name bus-api.yourdomain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name bus-api.yourdomain.com;
+
+    ssl_certificate     /etc/letsencrypt/live/bus-api.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bus-api.yourdomain.com/privkey.pem;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 管理员 Web 后台（admin-web 文件夹里的静态文件），可以直接放在服务器上用 Nginx 托管
+    location /admin/ {
+        alias /var/www/bustracker-admin-web/;
+        index index.html;
+        try_files $uri $uri/ /admin/index.html;
+    }
+}

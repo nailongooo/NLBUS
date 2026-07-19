@@ -1,0 +1,22 @@
+# ===== iOS / Xcode =====
+ios/*.xcodeproj/
+ios/DerivedData/
+ios/build/
+ios/.build/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+
+# ===== Node.js / 后端 =====
+backend/node_modules/
+backend/logs/
+backend/.env
+
+# ===== macOS =====
+.DS_Store
+
+# ===== 证书相关，绝对不要提交到仓库 =====
+*.p12
+*.mobileprovision
+*.cer
+*.pem

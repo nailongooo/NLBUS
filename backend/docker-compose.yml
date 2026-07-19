@@ -1,0 +1,32 @@
+# 这份 docker-compose 只启动 Node.js 后端本身，连接你已有的 MySQL（不在这里帮你建 MySQL 容器），
+# 因为你说明已经有一台云服务器上装好的 MySQL 了。
+# 如果你想让 MySQL 也跑在 Docker 里，可以参考文件末尾注释掉的部分自行打开。
+version: "3.8"
+
+services:
+  bus-tracker-api:
+    build: .
+    container_name: bus-tracker-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+
+# 如果你更想让 MySQL 也用 Docker 管理，取消下面的注释，并把 .env 里的 DB_HOST 改成 "mysql"
+#  mysql:
+#    image: mysql:8.0
+#    container_name: bus-tracker-mysql
+#    restart: unless-stopped
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 请修改
+#      MYSQL_DATABASE: bus_tracker
+#    volumes:
+#      - mysql_data:/var/lib/mysql
+#    ports:
+#      - "3306:3306"
+#
+#volumes:
+#  mysql_data:

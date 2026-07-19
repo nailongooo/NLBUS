@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>出行提醒 · 管理后台</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <div class="sidebar">
+      <h2>出行提醒管理后台</h2>
+      <a id="nav-overview">数据概览</a>
+      <a id="nav-pending">路线审核</a>
+      <a id="nav-import">批量导入</a>
+      <a id="nav-announcement">发布公告</a>
+      <a id="nav-logs">运行日志</a>
+      <a id="logoutBtn" style="margin-top: 20px; color: #ff8a8a;">退出登录</a>
+    </div>
+
+    <div class="main-content">
+
+      <div id="section-overview">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="value" id="statTotalRoutes">-</div><div class="label">路线总数</div></div>
+          <div class="stat-card"><div class="value" id="statPendingRoutes">-</div><div class="label">待审核路线</div></div>
+          <div class="stat-card"><div class="value" id="statTotalFeedback">-</div><div class="label">用户反馈总数</div></div>
+        </div>
+        <div class="panel">
+          <h3>说明</h3>
+          <p class="hint">左侧菜单可以进行路线审核、批量导入数据、发布公告、查看运行日志等操作。数据库导出功能可以直接访问接口
+            <code>/api/admin/export</code>（需要带上管理员登录后的 Authorization 头，建议用 Postman 等工具调用）。</p>
+        </div>
+      </div>
+
+      <div id="section-pending" style="display:none;">
+        <div class="panel">
+          <h3>待审核路线</h3>
+          <table>
+            <thead><tr><th>名称</th><th>方向</th><th>站点数</th><th>操作</th></tr></thead>
+            <tbody id="pendingTableBody"><tr><td colspan="4">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="section-import" style="display:none;">
+        <div class="panel">
+          <h3>CSV 批量导入</h3>
+          <p class="hint">表头需要包含：route_name, direction, stop_name, latitude, longitude, stop_order（可选）</p>
+          <form id="csvImportForm">
+            <div class="file-row"><input type="file" id="csvFile" accept=".csv" required /><button type="submit" style="width:auto;">导入</button></div>
+            <div id="csvImportResult" class="hint"></div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h3>JSON 批量导入</h3>
+          <p class="hint">格式为路线对象数组，每个对象包含 name, direction, stops: [{name, latitude, longitude}]</p>
+          <form id="jsonImportForm">
+            <div class="file-row"><input type="file" id="jsonFile" accept=".json" required /><button type="submit" style="width:auto;">导入</button></div>
+            <div id="jsonImportResult" class="hint"></div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h3>GTFS 导入</h3>
+          <p class="hint">请把 GTFS zip 在本地解压后，分别选择 routes.txt / stops.txt / trips.txt / stop_times.txt 四个文件</p>
+          <form id="gtfsImportForm">
+            <div class="file-row">routes.txt <input type="file" id="gtfsRoutes" accept=".txt" required /></div>
+            <div class="file-row">stops.txt <input type="file" id="gtfsStops" accept=".txt" required /></div>
+            <div class="file-row">trips.txt <input type="file" id="gtfsTrips" accept=".txt" required /></div>
+            <div class="file-row">stop_times.txt <input type="file" id="gtfsStopTimes" accept=".txt" required /></div>
+            <button type="submit" style="width:auto;">导入</button>
+            <div id="gtfsImportResult" class="hint"></div>
+          </form>
+        </div>
+      </div>
+
+      <div id="section-announcement" style="display:none;">
+        <div class="panel">
+          <h3>发布公告</h3>
+          <form id="announcementForm">
+            <input type="text" id="annTitle" placeholder="公告标题" required />
+            <textarea id="annContent" placeholder="公告内容" required></textarea>
+            <label><input type="checkbox" id="annPinned" /> 置顶显示</label>
+            <br /><br />
+            <button type="submit" style="width:auto;">发布</button>
+            <div id="announcementResult" class="hint"></div>
+          </form>
+        </div>
+      </div>
+
+      <div id="section-logs" style="display:none;">
+        <div class="panel">
+          <h3>运行日志（最近 300 行）</h3>
+          <div class="log-box" id="logBox">加载中...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
