@@ -1,5 +1,18 @@
 # 常见问题 FAQ
 
+### Q0：报错 "Unrecognized named-value: 'secrets'"，Actions 一启动就秒失败？
+这是我最初给的 `ios-build.yml` 里的一个真实 bug（已修复），记录在这里方便你以后遇到类似问题时理解原因：
+GitHub Actions **不允许在"job 级别的 `if:`"里直接判断 `secrets.xxx != ''`**，这是 GitHub 的硬性限制——job 级别
+的 `if` 在 runner 分配之前就要求值，此时 secrets 还没有被注入进这次运行的上下文，所以直接引用会导致
+**整个工作流文件被判定为不合法**，进而所有 job（包括根本不需要证书的编译检查）都无法运行，
+表现出来就是"一启动就秒失败"。
+
+正确写法是用一个单独的、跑在 `ubuntu-latest`（不额外计费 macOS 分钟数）上的 `check-secrets` job，
+在它的"步骤内部"（`steps` 而不是 job 的 `if`）读取 secrets 并输出一个普通的 `true`/`false` 字符串，
+下游的 `archive-and-export` job 再通过 `needs.check-secrets.outputs.has-signing == 'true'` 来判断——
+`needs.*.outputs` 是 GitHub 官方明确支持在 job 级别 `if:` 里使用的写法。现在的 `ios-build.yml` 已经是
+这个正确写法了。
+
 ### Q1：GitHub Actions 报错了怎么办？
 把 Actions 运行记录里报红的那一步的完整日志复制给我（不需要整个日志，找到第一处 `error:` 或者
 `** BUILD FAILED **` 附近的内容即可），我可以帮你分析具体原因。iOS 项目第一次真正编译是在 Actions
