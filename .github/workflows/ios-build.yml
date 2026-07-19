@@ -12,6 +12,11 @@ on:
     branches: [ "main" ]
   workflow_dispatch: {}
 
+# 默认情况下 GITHUB_TOKEN 只有只读权限，创建 Release / 上传 Release 附件需要写权限，
+# 否则会报 "403 Resource not accessible by integration"。
+permissions:
+  contents: write
+
 jobs:
   # ------------------------------------------------------------------
   # 预检查：判断本仓库是否已经配置好签名相关的 Secrets。
@@ -75,8 +80,7 @@ jobs:
             -project BusTracker.xcodeproj \
             -scheme BusTracker \
             -destination "generic/platform=iOS Simulator" \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcbeautify || true
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Run Unit Tests
         working-directory: ios
@@ -86,8 +90,7 @@ jobs:
             -project BusTracker.xcodeproj \
             -scheme BusTracker \
             -destination "platform=iOS Simulator,name=iPhone 16" \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcbeautify || true
+            CODE_SIGNING_ALLOWED=NO
 
   # ------------------------------------------------------------------
   # 第二步（可选）：如果你在仓库 Secrets 里配置好了签名证书，
@@ -165,8 +168,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Development" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             PROVISIONING_PROFILE="$PROFILE_UUID" \
-            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
-            | xcbeautify || true
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}"
 
       - name: Write ExportOptions.plist
         env:
@@ -201,8 +203,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath "$RUNNER_TEMP/BusTracker.xcarchive" \
             -exportPath "$RUNNER_TEMP/export" \
-            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            | xcbeautify || true
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
@@ -210,6 +211,7 @@ jobs:
           name: BusTracker-ipa
           path: ${{ runner.temp }}/export/*.ipa
           retention-days: 30
+          if-no-files-found: error
 
       - name: Generate changelog since last tag
         id: changelog
