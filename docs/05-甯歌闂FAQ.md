@@ -1,5 +1,33 @@
 # 常见问题 FAQ
 
+### Q-2：报错 "Unable to find a device matching the provided destination specifier... name:iPhone 16"？
+这也是我这边的问题（已修复），记录一下：我最初在跑单元测试的步骤里写死了模拟器型号名 `iPhone 16`，
+但苹果每次更新 Xcode 模拟器镜像，默认自带的机型阵容都可能变化——你这次遇到的 Xcode 26.5 镜像上
+已经没有单独的"iPhone 16"了（换成了 iPhone 16e / 17 / 17 Pro / 17 Pro Max / 17e / Air 这些）。
+
+现在改成运行时动态查询"当前镜像里实际有哪些可用的 iPhone 模拟器"，自动选一个（优先选普通数字型号，
+比如 iPhone 17，避开 Pro/Pro Max/Air/e 这些变体），不再写死具体型号名，这样以后镜像再怎么更新
+也不会因为型号名对不上而失败。对应的脚本在 `.github/scripts/pick_simulator.py`。
+
+### Q-1：日志里出现 "Pattern does not match any files" 和 "403 Resource not accessible by integration"？
+这是我这边工作流文件里的两个真实 bug（已修复），记录一下方便理解：
+
+1. **`|| true` 把真实的编译失败也吞掉了**。我最初在每个 `xcodebuild ... | xcbeautify` 命令后面加了 `|| true`，
+   本意是"防止 xcbeautify 这个格式化小工具没装导致误报失败"，但这样写会导致**不管 xcodebuild 本身是真失败
+   还是真成功，这一步永远显示成功**。所以哪怕 Archive 或者 Export IPA 那一步实际上出错了、没有真正产出
+   IPA 文件，日志里也看不出来，一直到最后 "上传/创建 Release" 那一步才会因为找不到 ipa 文件报错。
+   现在已经去掉了这个 `|| true`，`xcodebuild` 真实的成功/失败会如实反映在每一步上。
+2. **创建 GitHub Release 报 403**：默认情况下 `GITHUB_TOKEN` 只有只读权限，创建 Release、上传 Release 附件
+   需要写权限。现在已经在工作流文件顶部加上：
+   ```yaml
+   permissions:
+     contents: write
+   ```
+   来解决这个问题。
+
+修复之后重新跑一次，如果 Archive 或 Export IPA 那一步第一次真正报错，把具体报错内容发我，这时候看到的
+才是关于签名/证书配置的真实问题（比如 Bundle ID 不匹配、描述文件没包含这台设备等），我可以针对性帮你解决。
+
 ### Q0：报错 "Unrecognized named-value: 'secrets'"，Actions 一启动就秒失败？
 这是我最初给的 `ios-build.yml` 里的一个真实 bug（已修复），记录在这里方便你以后遇到类似问题时理解原因：
 GitHub Actions **不允许在"job 级别的 `if:`"里直接判断 `secrets.xxx != ''`**，这是 GitHub 的硬性限制——job 级别

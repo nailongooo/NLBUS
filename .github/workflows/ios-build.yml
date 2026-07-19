@@ -1,6 +1,6 @@
 name: iOS Build & Package
 
-# 触发时机2111：
+# 触发时机：
 # - 每次 push 到 main 分支，或者对 main 发起 Pull Request：只做"编译检查 + 单元测试"，不需要任何证书
 # - 手动点击 "Run workflow"：同上
 # - push 一个 v 开头的 tag（例如 v1.0.0）：如果你已经配置好了签名相关的 Secrets，则额外产出签名 IPA 并创建 GitHub Release
@@ -72,6 +72,13 @@ jobs:
       - name: Show available simulators (debug helper)
         run: xcrun simctl list devices available | head -50
 
+      - name: Pick an available iPhone simulator
+        id: pick_sim
+        run: |
+          DEVICE_NAME=$(xcrun simctl list devices available -j | python3 "$GITHUB_WORKSPACE/.github/scripts/pick_simulator.py")
+          echo "device_name=$DEVICE_NAME" >> "$GITHUB_OUTPUT"
+          echo "本次 CI 将使用模拟器：$DEVICE_NAME"
+
       - name: Build for Simulator (compile check)
         working-directory: ios
         run: |
@@ -84,12 +91,14 @@ jobs:
 
       - name: Run Unit Tests
         working-directory: ios
+        env:
+          SIM_NAME: ${{ steps.pick_sim.outputs.device_name }}
         run: |
           set -o pipefail
           xcodebuild test \
             -project BusTracker.xcodeproj \
             -scheme BusTracker \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "platform=iOS Simulator,name=$SIM_NAME" \
             CODE_SIGNING_ALLOWED=NO
 
   # ------------------------------------------------------------------

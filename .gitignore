@@ -15,6 +15,10 @@ backend/.env
 # ===== macOS =====
 .DS_Store
 
+# ===== Python（辅助脚本用）=====
+__pycache__/
+*.pyc
+
 # ===== 证书相关，绝对不要提交到仓库 =====
 *.p12
 *.mobileprovision
