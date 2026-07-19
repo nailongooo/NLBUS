@@ -1,6 +1,6 @@
 name: iOS Build & Package
 
-# 触发时机：
+# 触发时机2111：
 # - 每次 push 到 main 分支，或者对 main 发起 Pull Request：只做"编译检查 + 单元测试"，不需要任何证书
 # - 手动点击 "Run workflow"：同上
 # - push 一个 v 开头的 tag（例如 v1.0.0）：如果你已经配置好了签名相关的 Secrets，则额外产出签名 IPA 并创建 GitHub Release
